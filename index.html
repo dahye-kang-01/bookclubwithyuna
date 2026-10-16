@@ -44,6 +44,8 @@ h1{font-family:var(--display);font-weight:800;font-size:30px;margin:0;letter-spa
 .me b{color:var(--fg)}
 .btn{background:var(--accent);color:var(--accent-ink);border:0;border-radius:10px;padding:10px 16px;font-weight:600;min-height:44px}
 .ghost{background:transparent;border:1.5px solid var(--line);border-radius:10px;padding:8px 12px;min-height:40px;color:var(--fg)}
+.ghost.danger{color:var(--danger);border-color:var(--danger);font-size:14px;align-self:flex-start}
+.ghost.danger.armed{background:var(--danger);color:var(--surface)}
 .link{background:none;border:0;color:var(--accent);padding:4px;font-size:14px;text-decoration:underline;text-underline-offset:3px}
 /* 책장 */
 .shelf{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:26px 18px;padding-bottom:6px}
@@ -111,6 +113,45 @@ h1{font-family:var(--display);font-weight:800;font-size:30px;margin:0;letter-spa
 .res > div{min-width:0}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 18px);background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:15px;z-index:30;max-width:calc(100% - 32px)}
 .setup{background:var(--surface);border:1.5px solid var(--line);border-radius:14px;padding:18px;line-height:1.7}
+/* 장면: 책장 위를 걸어다니는 두 아이 */
+.scene{position:relative;height:132px;margin-bottom:-4px;overflow:hidden}
+.scene::after{content:"";position:absolute;left:0;right:0;bottom:6px;height:2px;border-radius:2px;background:var(--shelf)}
+.girl{position:absolute;left:0;bottom:4px;width:60px;height:110px;cursor:pointer;will-change:transform;-webkit-tap-highlight-color:transparent}
+.girl svg{width:60px;height:110px;display:block;overflow:visible;transition:transform .2s}
+.girl .eyes-happy,.girl .mouth-laugh,.girl .book-prop{display:none}
+.girl.laugh .eyes-open,.girl.laugh .mouth-smile{display:none}
+.girl.laugh .eyes-happy,.girl.laugh .mouth-laugh{display:inline}
+.girl.read .book-prop{display:inline}
+.girl .leg-l,.girl .leg-r,.girl .arm-l,.girl .arm-r,.girl .bodyg{transition:transform .25s}
+.girl.walk .leg-l{animation:swing .48s ease-in-out infinite alternate}
+.girl.walk .leg-r{animation:swing .48s ease-in-out infinite alternate-reverse}
+.girl.walk .arm-l{animation:armswing .48s ease-in-out infinite alternate-reverse}
+.girl.walk .arm-r{animation:armswing .48s ease-in-out infinite alternate}
+.girl.walk .bodyg{animation:bob .24s ease-in-out infinite alternate}
+.girl.laugh .bodyg{animation:giggle .16s ease-in-out infinite alternate}
+.girl.laugh .arm-l{transform:rotate(-30deg)}
+.girl.laugh .arm-r{transform:rotate(30deg)}
+.girl.read .arm-l{transform:rotate(-62deg)}
+.girl.read .arm-r{transform:rotate(62deg)}
+.girl.read .head{transform:rotate(6deg)}
+.girl .head{transform-box:view-box;transform-origin:30px 40px;transition:transform .3s}
+.girl .eyes-open circle{transform-box:fill-box;transform-origin:center;animation:blink 4.6s infinite}
+@keyframes swing{from{transform:rotate(20deg)}to{transform:rotate(-20deg)}}
+@keyframes armswing{from{transform:rotate(16deg)}to{transform:rotate(-16deg)}}
+@keyframes bob{from{transform:translateY(0)}to{transform:translateY(-2px)}}
+@keyframes giggle{from{transform:translateY(0) rotate(-2deg)}to{transform:translateY(-3px) rotate(2deg)}}
+@keyframes blink{0%,94%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
+.bubble{position:absolute;bottom:112px;left:50%;transform:translateX(-50%);white-space:nowrap;background:var(--surface);color:var(--fg);border:1.5px solid var(--line);border-radius:12px;padding:4px 10px;font-size:13px;font-weight:600;box-shadow:0 4px 10px -6px rgba(0,0,0,.4);opacity:0;transition:opacity .2s;pointer-events:none}
+.bubble::after{content:"";position:absolute;left:50%;bottom:-6px;width:10px;height:10px;background:var(--surface);border-right:1.5px solid var(--line);border-bottom:1.5px solid var(--line);transform:translateX(-50%) rotate(45deg)}
+.bubble.on{opacity:1}
+/* 책 꺼내기 */
+.book{position:relative}
+.book.pulling{z-index:5}
+.bookview .left .cover{animation:arrive .5s cubic-bezier(.2,.8,.3,1)}
+.bookview .right{animation:fadeup .45s .1s both}
+@keyframes arrive{from{opacity:0;transform:translateY(-26px) rotate(-5deg) scale(.9)}to{opacity:1;transform:none}}
+@keyframes fadeup{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.girl *{animation:none!important}.bookview .left .cover,.bookview .right{animation:none}}
 @media (max-width:620px){
   .bookview{grid-template-columns:1fr}
   .bookview .left{position:static;display:grid;grid-template-columns:110px 1fr;gap:14px;align-items:end}
@@ -137,6 +178,7 @@ h1{font-family:var(--display);font-weight:800;font-size:30px;margin:0;letter-spa
   <div class="status" id="status" role="status"></div>
 
   <main id="home">
+    <div class="scene" id="scene" aria-hidden="true"></div>
     <div class="shelf" id="shelf"></div>
   </main>
 
@@ -147,7 +189,7 @@ h1{font-family:var(--display);font-weight:800;font-size:30px;margin:0;letter-spa
 <div class="sheet" id="sheet" hidden role="dialog" aria-modal="true"><div class="sheet-in" id="sheet-in"></div></div>
 <div class="toast" id="toast" hidden role="status"></div>
 
-<script src="config.js"></script>
+<script src="config.js?v=3"></script>
 <script type="module">
 const V="10.12.2";
 const $=id=>document.getElementById(id);
@@ -209,7 +251,7 @@ function renderShelf(){
       el("span",{class:"bt",text:b.title}),
       el("span",{class:"bn",text:(b.noteCount?"글 "+b.noteCount+"개":"아직 글 없음")})
     ]);
-    btn.onclick=()=>go(b.id);
+    btn.onclick=()=>pullBook(btn,b.id);
     s.appendChild(btn);
   });
   const add=el("button",{class:"addcard",type:"button"},[el("span",{text:"+"}),"책 추가"]);
@@ -221,7 +263,7 @@ function renderShelf(){
 async function searchGoogle(term){
   const key=CFG.booksApiKey?"&key="+encodeURIComponent(CFG.booksApiKey):"";
   const r=await fetch("https://www.googleapis.com/books/v1/volumes?maxResults=12&printType=books&q="+encodeURIComponent(term)+key);
-  if(!r.ok)throw new Error(String(r.status));
+  if(!r.ok)throw new Error(r.status+(key?"·키 사용":"·키 없음"));
   const j=await r.json();
   return (j.items||[]).map(it=>{const v=it.volumeInfo||{};const img=v.imageLinks&&(v.imageLinks.thumbnail||v.imageLinks.smallThumbnail);
     return {title:(v.title||"")+(v.subtitle?" : "+v.subtitle:""),author:(v.authors||[]).join(", "),
@@ -229,7 +271,7 @@ async function searchGoogle(term){
       cover:img?safeUrl(img).replace("&edge=curl",""):""};});
 }
 async function searchOpenLibrary(term){
-  const r=await fetch("https://openlibrary.org/search.json?limit=12&fields=title,author_name,first_publish_year,cover_i&q="+encodeURIComponent(term));
+  const r=await fetch("https://openlibrary.org/search.json?limit=12&q="+encodeURIComponent(term));
   if(!r.ok)throw new Error(String(r.status));
   const j=await r.json();
   return (j.docs||[]).map(d=>({title:d.title||"",author:(d.author_name||[]).join(", "),
@@ -321,6 +363,24 @@ function renderBookHead(){
   h.textContent="";
   h.append(el("h2",{text:current.title}),el("div",{class:"au",text:current.author||""}),
     el("div",{class:"count",text:(current.addedBy?current.addedBy+" 님이 올림":"")}));
+  if(current.uid&&current.uid===uid){
+    const del=el("button",{class:"ghost danger",type:"button",text:"이 책 삭제"});
+    let armed=false,t;
+    del.onclick=async()=>{
+      if(!armed){armed=true;const n=notes.length;del.textContent=n?"글 "+n+"개도 함께 지워져요. 한 번 더 누르면 삭제":"한 번 더 누르면 삭제";del.classList.add("armed");
+        t=setTimeout(()=>{armed=false;del.textContent="이 책 삭제";del.classList.remove("armed");},4000);return;}
+      clearTimeout(t);del.disabled=true;del.textContent="지우는 중…";
+      const id=current.id,title=current.title;
+      try{
+        const snap=await F.getDocs(F.collection(db,"books",id,"notes"));
+        for(const d of snap.docs){await F.deleteDoc(d.ref);}
+        await F.deleteDoc(F.doc(db,"books",id));
+        go("");toast("'"+title+"'을(를) 책장에서 지웠어요.");
+      }catch(e){del.disabled=false;armed=false;del.classList.remove("armed");del.textContent="이 책 삭제";
+        toast("지우지 못했어요. Firebase 규칙을 새 버전으로 바꿨는지 확인해 주세요.");}
+    };
+    h.appendChild(del);
+  }
 }
 function renderBookPage(){
   const p=$("bookpage");p.textContent="";
@@ -429,7 +489,107 @@ async function start(){
     setStatus("저장소에 연결하지 못했어요. 인터넷 연결과 Firebase 설정(익명 로그인 사용)을 확인해 주세요.",true);
   }
 }
+/* ---------- 책 꺼내기 애니메이션 ---------- */
+const REDUCED=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;
+function pullBook(btn,id){
+  const c=btn.querySelector(".cover");
+  if(REDUCED||!c||!c.animate){go(id);return;}
+  btn.classList.add("pulling");
+  const a=c.animate([
+    {transform:"translateY(0) rotate(0)"},
+    {transform:"translateY(-24px) rotate(-5deg)",offset:.35},
+    {transform:"translateY(-36px) rotate(-2deg) scale(1.12)",opacity:1,offset:.68},
+    {transform:"translateY(-44px) scale(1.5)",opacity:0}
+  ],{duration:640,easing:"cubic-bezier(.3,.7,.4,1)"});
+  a.onfinish=()=>go(id);
+}
+
+/* ---------- 걸어다니는 두 아이 ---------- */
+function girlSVG(o){
+  const backHair=o.style==="long"
+    ?`<path d="M15 26 Q13 54 20 60 L40 60 Q47 54 45 26 Q44 10 30 10 Q16 10 15 26 Z" fill="${o.hair}"/>`
+    :`<path d="M15 28 Q15 41 19 43 L41 43 Q45 41 45 28 Q44 11 30 11 Q16 11 15 28 Z" fill="${o.hair}"/><circle cx="41" cy="12" r="6" fill="${o.hair}"/><circle cx="38" cy="15" r="2" fill="${o.accent}"/>`;
+  const bangs=o.style==="long"
+    ?`<path d="M16 24 Q18 12 30 12 Q42 12 44 24 Q38 18 30 19 Q22 18 16 24 Z" fill="${o.hair}"/>`
+    :`<path d="M16 25 Q20 12 32 12 Q44 13 44 25 Q36 16 26 21 Q20 23 16 25 Z" fill="${o.hair}"/>`;
+  return `<svg viewBox="0 0 60 110" aria-hidden="true">
+  <ellipse cx="30" cy="106" rx="15" ry="3" fill="rgba(0,0,0,.14)"/>
+  <g class="bodyg">
+    <g class="leg-l" style="transform-origin:26px 72px"><rect x="24" y="70" width="5" height="30" rx="2.5" fill="${o.skin}"/><ellipse cx="26" cy="101" rx="5" ry="3" fill="${o.shoe}"/></g>
+    <g class="leg-r" style="transform-origin:33px 72px"><rect x="31" y="70" width="5" height="30" rx="2.5" fill="${o.skin}"/><ellipse cx="34" cy="101" rx="5" ry="3" fill="${o.shoe}"/></g>
+    <g class="arm-l" style="transform-origin:22px 46px"><rect x="18.5" y="45" width="4.5" height="23" rx="2.2" fill="${o.skin}"/></g>
+    <g class="arm-r" style="transform-origin:38px 46px"><rect x="37" y="45" width="4.5" height="23" rx="2.2" fill="${o.skin}"/></g>
+    <path d="M15 76 Q30 81 45 76 L38.5 43 Q30 39 21.5 43 Z" fill="${o.dress}"/>
+    <path d="M24 43 Q30 49 36 43" fill="none" stroke="${o.accent}" stroke-width="2"/>
+    <g class="book-prop"><rect x="20" y="49" width="20" height="14" rx="1.5" fill="${o.book}"/><line x1="30" y1="49" x2="30" y2="63" stroke="rgba(0,0,0,.25)" stroke-width="1"/></g>
+    <g class="head">
+      ${backHair}
+      <rect x="27" y="37" width="6" height="7" fill="${o.skin}"/>
+      <circle cx="30" cy="26" r="14" fill="${o.skin}"/>
+      ${bangs}
+      <g class="eyes-open" fill="#2b2420"><circle cx="25" cy="27.5" r="1.9"/><circle cx="35" cy="27.5" r="1.9"/></g>
+      <g class="eyes-happy" fill="none" stroke="#2b2420" stroke-width="1.6" stroke-linecap="round"><path d="M22.8 28 Q25 25 27.2 28"/><path d="M32.8 28 Q35 25 37.2 28"/></g>
+      <ellipse cx="21.5" cy="31.5" rx="2.6" ry="1.5" fill="#f2a3a3" opacity=".7"/><ellipse cx="38.5" cy="31.5" rx="2.6" ry="1.5" fill="#f2a3a3" opacity=".7"/>
+      <path class="mouth-smile" d="M27 32.5 Q30 35 33 32.5" fill="none" stroke="#8a3b3b" stroke-width="1.4" stroke-linecap="round"/>
+      <path class="mouth-laugh" d="M26.5 31.8 Q30 38 33.5 31.8 Z" fill="#8a2f3c"/>
+    </g>
+  </g>
+</svg>`;
+}
+const LINES={talk:["이 책 읽어봤어?","다음 책 뭐 읽지?","완전 공감!","여기 밑줄 쳤어","오늘 모임 몇 시야?"],laugh:["ㅋㅋㅋㅋ","히히","아 웃겨 ㅋㅋ","진짜?! ㅋㅋ"],read:["음…","이 문장 좋다","한 장만 더…"]};
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+function startScene(){
+  const scene=$("scene");if(!scene)return;
+  const specs=[
+    {style:"long",hair:"#4a2f22",skin:"#f6d7c3",dress:"#e7a5b8",accent:"#fff3f6",shoe:"#5b3a4a",book:"#7fb6c9"},
+    {style:"bun",hair:"#2c2523",skin:"#f3d2bb",dress:"#9cc3a6",accent:"#f7e08a",shoe:"#3d4a40",book:"#f0c46c"}];
+  const G=specs.map((sp,i)=>{
+    const el=document.createElement("div");el.className="girl idle";el.innerHTML=girlSVG(sp);
+    const bub=document.createElement("div");bub.className="bubble";el.appendChild(bub);
+    scene.appendChild(el);
+    const g={el,bub,svg:el.querySelector("svg"),x:0,dir:i?-1:1,state:"idle",until:0,target:0,bt:0};
+    el.addEventListener("click",()=>{setState(g,"laugh",performance.now(),1800);say(g,pick(LINES.laugh.concat(LINES.talk)));});
+    return g;
+  });
+  let W=Math.max(60,scene.clientWidth-60);
+  G[0].x=W*0.2;G[1].x=W*0.65;
+  function say(g,t){g.bub.textContent=t;g.bub.classList.add("on");clearTimeout(g.bt);g.bt=setTimeout(()=>g.bub.classList.remove("on"),1900);}
+  function setState(g,st,now,ms){g.state=st;g.until=now+ms;g.el.className="girl "+st;}
+  function face(g,d){g.dir=d;g.svg.style.transform="scaleX("+d+")";}
+  function place(g){g.el.style.transform="translateX("+g.x.toFixed(1)+"px)";}
+  function decide(g,o,now){
+    const near=Math.abs(g.x-o.x)<120,r=Math.random();
+    if(near&&r<0.4&&o.state!=="walk"){
+      face(g,o.x>g.x?1:-1);face(o,g.x>o.x?1:-1);
+      setState(g,"laugh",now,2200);setState(o,"laugh",now,2200);
+      say(g,pick(LINES.talk));setTimeout(()=>say(o,pick(LINES.laugh)),700);
+    }else if(r<0.6){setState(g,"read",now,2600+Math.random()*2600);if(Math.random()<.4)say(g,pick(LINES.read));}
+    else if(r<0.72){setState(g,"idle",now,1200+Math.random()*1800);}
+    else{g.target=Math.random()*W;face(g,g.target>g.x?1:-1);setState(g,"walk",now,99999);}
+  }
+  G.forEach(g=>{face(g,g.dir);place(g);});
+  if(REDUCED){G.forEach(g=>g.el.className="girl idle");return;}
+  let last=performance.now();
+  function loop(now){
+    const dt=Math.min(.05,(now-last)/1000);last=now;
+    if(!$("home").hidden&&!document.hidden){
+      W=Math.max(60,scene.clientWidth-60);
+      G.forEach((g,i)=>{
+        const o=G[1-i];
+        if(g.state==="walk"){
+          const step=38*dt*g.dir;g.x+=step;
+          if((g.dir>0&&g.x>=g.target)||(g.dir<0&&g.x<=g.target)||g.x<0||g.x>W){g.x=Math.max(0,Math.min(W,g.x));decide(g,o,now);}
+          place(g);
+        }else if(now>g.until){decide(g,o,now);}
+      });
+    }
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+}
+
 renderShelf();
+startScene();
 start();
 if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(()=>{});
 </script>
