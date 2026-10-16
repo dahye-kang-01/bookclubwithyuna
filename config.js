@@ -5,7 +5,7 @@ window.BOOKCLUB = {
   // Firestore 데이터베이스 ID ((default)로 만들었으면 비워 두세요)
   databaseId: "",
   // Google 도서 검색 API 키 (없으면 비워 두세요)
-  booksApiKey: "",
+  booksApiKey: "AIzaSyChAxUvWceKGSHKFfbX4fq7VRrVA4pIbJA",
   firebase: {
     apiKey: "AIzaSyDc9r9MDE8HCniixVkxx7Mgl8YqETgIUYU",
     authDomain: "bookclubwithyuna.firebaseapp.com",
