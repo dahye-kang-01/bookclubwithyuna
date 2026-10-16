@@ -1,0 +1,419 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>우리들의 책장</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="책장">
+<meta name="theme-color" content="#e9ede6" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#151a17" media="(prefers-color-scheme: dark)">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@700;800&display=swap">
+<style>
+/* 레이아웃: 위 헤더(모임 이름·닉네임) → 책 표지가 선반 위에 놓인 그리드. 표지를 누르면 책 화면(큰 표지 + 글 쓰기 + 글 목록)으로 전환 */
+:root{
+  --bg:#e9ede6; --shelf:#c9d3c4; --surface:#fbfcfa; --fg:#18201b; --muted:#5d6a62; --line:#d3dacf;
+  --accent:#1f5c73; --accent-ink:#ffffff; --accent-soft:#dbe8ee;
+  --memo:#7a5c12; --memo-bg:#f6ecc8; --op:#1f5c73; --op-bg:#dbe8ee; --rev:#6b2e4f; --rev-bg:#f1dde7;
+  --danger:#b4471c;
+  --display:"Nanum Myeongjo","AppleMyungjo",serif;
+  --body:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#151a17; --shelf:#2a332d; --surface:#1d241f; --fg:#e8ede9; --muted:#9aa79f; --line:#2f3832;
+  --accent:#7fc2db; --accent-ink:#0f1a1f; --accent-soft:#1f3540;
+  --memo:#f0cf72; --memo-bg:#3a3118; --op:#7fc2db; --op-bg:#1f3540; --rev:#e8a6c6; --rev-bg:#3c2230;
+  --danger:#f08a5d; color-scheme:dark}}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.55;-webkit-text-size-adjust:100%}
+[hidden]{display:none!important}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.wrap{max-width:920px;margin:0 auto;padding-top:calc(env(safe-area-inset-top,0px) + 18px);padding-bottom:calc(env(safe-area-inset-bottom,0px) + 48px);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:20px}
+header.top{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+h1{font-family:var(--display);font-weight:800;font-size:30px;margin:0;letter-spacing:-.01em;line-height:1.2;text-wrap:balance}
+.count{color:var(--muted);font-size:14px;margin-top:2px}
+.me{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted)}
+.me b{color:var(--fg)}
+.btn{background:var(--accent);color:var(--accent-ink);border:0;border-radius:10px;padding:10px 16px;font-weight:600;min-height:44px}
+.ghost{background:transparent;border:1.5px solid var(--line);border-radius:10px;padding:8px 12px;min-height:40px;color:var(--fg)}
+.link{background:none;border:0;color:var(--accent);padding:4px;font-size:14px;text-decoration:underline;text-underline-offset:3px}
+/* 책장 */
+.shelf{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:26px 18px;padding-bottom:6px}
+.book{display:flex;flex-direction:column;gap:8px;background:none;border:0;padding:0;text-align:left;color:inherit}
+.cover{position:relative;aspect-ratio:2/3;width:100%;max-width:100%;border-radius:3px 6px 6px 3px;overflow:hidden;background:var(--shelf);box-shadow:0 1px 0 rgba(0,0,0,.08),0 8px 18px -8px rgba(0,0,0,.45);transition:transform .2s}
+.cover::after{content:"";position:absolute;inset:0 auto 0 0;width:6px;background:linear-gradient(90deg,rgba(0,0,0,.18),transparent)}
+.cover img{width:100%;height:100%;object-fit:cover;display:block}
+.cover .ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:12px;text-align:center;font-family:var(--display);font-weight:800;font-size:17px;line-height:1.3;color:var(--fg)}
+.book:hover .cover{transform:translateY(-3px)}
+.book .bt{font-weight:600;font-size:14px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.book .bn{font-size:12px;color:var(--muted)}
+.addcard{aspect-ratio:2/3;border:2px dashed var(--line);border-radius:6px;background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--muted);font-weight:600}
+.addcard span{font-size:34px;line-height:1;font-weight:300}
+.empty{color:var(--muted);text-align:center;padding:28px 0}
+.status{font-size:14px;color:var(--muted);min-height:1.2em}
+.status.err{color:var(--danger)}
+/* 책 화면 */
+.bookview{display:grid;grid-template-columns:minmax(150px,240px) 1fr;gap:24px;align-items:start}
+.bookview .left{display:flex;flex-direction:column;gap:12px;position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px)}
+.bookview h2{font-family:var(--display);font-weight:800;font-size:26px;margin:0;line-height:1.25;text-wrap:balance}
+.bookview .au{color:var(--muted);font-size:15px}
+.right{min-width:0;display:flex;flex-direction:column;gap:16px}
+.compose{background:var(--surface);border:1.5px solid var(--line);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:10px}
+.compose:focus-within{border-color:var(--accent)}
+.types{display:flex;gap:6px;flex-wrap:wrap}
+.type{border:1.5px solid var(--line);background:transparent;border-radius:99px;padding:5px 13px;font-size:14px;color:var(--muted)}
+.type[aria-pressed=true]{font-weight:700;border-color:transparent}
+.type[data-t="메모"][aria-pressed=true]{background:var(--memo-bg);color:var(--memo)}
+.type[data-t="의견"][aria-pressed=true]{background:var(--op-bg);color:var(--op)}
+.type[data-t="독후감"][aria-pressed=true]{background:var(--rev-bg);color:var(--rev)}
+.type[data-t="전체"][aria-pressed=true]{background:var(--accent-soft);color:var(--accent)}
+.compose textarea{border:0;background:transparent;resize:vertical;min-height:96px;width:100%;line-height:1.6;font-size:16px}
+.compose textarea:focus{outline:none}
+.crow{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.crow input{width:110px;border:1.5px solid var(--line);border-radius:8px;padding:7px 10px;background:var(--bg);font-size:15px}
+.notes{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.note{background:var(--surface);border:1.5px solid var(--line);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+.note .nh{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;font-size:13px;color:var(--muted)}
+.note .nick{font-weight:700;color:var(--fg);font-size:14px}
+.chip{font-size:12px;font-weight:700;border-radius:6px;padding:1px 8px}
+.chip.메모{background:var(--memo-bg);color:var(--memo)}
+.chip.의견{background:var(--op-bg);color:var(--op)}
+.chip.독후감{background:var(--rev-bg);color:var(--rev)}
+.note .tx{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.65}
+.note.long .tx{font-family:var(--display);font-weight:700;font-size:16px;line-height:1.85}
+.note .acts{display:flex;gap:4px;justify-content:flex-end}
+.note .acts button{background:none;border:0;color:var(--muted);font-size:13px;padding:4px 6px;border-radius:6px}
+.note .acts button.armed{color:var(--danger);background:rgba(180,71,28,.12)}
+.note textarea{width:100%;min-height:100px;border:1.5px solid var(--line);border-radius:8px;padding:8px;background:var(--bg);resize:vertical}
+/* 시트 */
+.scrim{position:fixed;inset:0;background:rgba(10,14,12,.5);z-index:20}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:21;background:var(--surface);border-radius:18px 18px 0 0;max-height:90vh;overflow-y:auto;padding-top:16px;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 20px);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.sheet-in{max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+.sheet h3{margin:0;font-family:var(--display);font-weight:800;font-size:22px}
+.sheet .head{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.field{display:flex;flex-direction:column;gap:4px;font-size:14px;color:var(--muted)}
+.field input{border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--bg);font-size:16px;min-height:44px;width:100%;min-width:0}
+.searchrow{display:flex;gap:8px}
+.searchrow input{flex:1;min-width:0}
+.results{display:flex;flex-direction:column;gap:8px}
+.res{display:grid;grid-template-columns:52px 1fr;gap:12px;align-items:center;text-align:left;background:var(--bg);border:1.5px solid var(--line);border-radius:12px;padding:8px}
+.res img,.res .noimg{width:52px;height:76px;object-fit:cover;border-radius:3px;background:var(--shelf)}
+.res b{display:block;line-height:1.35}
+.res small{color:var(--muted)}
+.res > div{min-width:0}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 18px);background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:15px;z-index:30;max-width:calc(100% - 32px)}
+.setup{background:var(--surface);border:1.5px solid var(--line);border-radius:14px;padding:18px;line-height:1.7}
+@media (max-width:620px){
+  .bookview{grid-template-columns:1fr}
+  .bookview .left{position:static;display:grid;grid-template-columns:110px 1fr;gap:14px;align-items:end}
+  .bookview .left .meta{display:flex;flex-direction:column;gap:6px}
+  .bookview h2{font-size:21px}
+  .shelf{grid-template-columns:repeat(auto-fill,minmax(98px,1fr));gap:20px 12px}
+  h1{font-size:25px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1 id="club">우리들의 책장</h1>
+      <div class="count" id="count"></div>
+    </div>
+    <div class="me" id="me" hidden>
+      <span>나: <b id="my-nick"></b></span>
+      <button class="link" type="button" id="b-nick">닉네임 바꾸기</button>
+    </div>
+  </header>
+  <div class="status" id="status" role="status"></div>
+
+  <main id="home">
+    <div class="shelf" id="shelf"></div>
+  </main>
+
+  <main id="bookpage" hidden></main>
+</div>
+
+<div class="scrim" id="scrim" hidden></div>
+<div class="sheet" id="sheet" hidden role="dialog" aria-modal="true"><div class="sheet-in" id="sheet-in"></div></div>
+<div class="toast" id="toast" hidden role="status"></div>
+
+<script src="config.js"></script>
+<script type="module">
+const V="10.12.2";
+const $=id=>document.getElementById(id);
+const CFG=window.BOOKCLUB||{};
+const TYPES=["메모","의견","독후감"];
+let db,F,uid=null,nick="",books=[],unsubNotes=null,notes=[],current=null,noteFilter="전체",composeType="메모";
+
+/* ---------- 작은 도우미 ---------- */
+function el(tag,attrs,kids){const e=document.createElement(tag);if(attrs)for(const k in attrs){const v=attrs[k];if(v==null)continue;if(k==="text")e.textContent=v;else if(k.startsWith("on"))e[k]=v;else e.setAttribute(k,v);}(kids||[]).forEach(c=>c&&e.appendChild(typeof c==="string"?document.createTextNode(c):c));return e;}
+let tt;function toast(m){const t=$("toast");t.textContent=m;t.hidden=false;clearTimeout(tt);tt=setTimeout(()=>t.hidden=true,2600);}
+function setStatus(m,err){const s=$("status");s.textContent=m||"";s.classList.toggle("err",!!err);}
+function when(ts){if(!ts||!ts.toDate)return "방금";const d=ts.toDate(),n=new Date(),diff=(n-d)/1000;
+  if(diff<60)return "방금";if(diff<3600)return Math.floor(diff/60)+"분 전";if(diff<86400)return Math.floor(diff/3600)+"시간 전";
+  return (d.getFullYear()!==n.getFullYear()?d.getFullYear()+". ":"")+(d.getMonth()+1)+". "+d.getDate()+".";}
+function safeUrl(u){if(!u)return "";u=String(u).trim().replace(/^http:\/\//,"https://");return /^https:\/\//.test(u)?u:"";}
+function coverEl(b,cls){
+  const c=el("div",{class:cls||"cover"});
+  const url=safeUrl(b.cover);
+  const ph=el("div",{class:"ph",text:b.title||""});
+  if(url){const img=el("img",{src:url,alt:"",loading:"lazy",referrerpolicy:"no-referrer"});img.onerror=()=>{img.remove();c.appendChild(ph);};c.appendChild(img);}
+  else c.appendChild(ph);
+  return c;
+}
+function getNick(){try{return localStorage.getItem("bookclub-nick")||"";}catch(e){return "";}}
+function putNick(n){try{localStorage.setItem("bookclub-nick",n);}catch(e){}}
+
+/* ---------- 시트 ---------- */
+function openSheet(title,build,{closable=true}={}){
+  const box=$("sheet-in");box.textContent="";
+  box.appendChild(el("div",{class:"head"},[el("h3",{text:title}),closable?el("button",{class:"ghost",type:"button",text:"닫기",onclick:closeSheet}):null]));
+  build(box);$("scrim").hidden=false;$("sheet").hidden=false;$("sheet").scrollTop=0;
+  $("scrim").onclick=closable?closeSheet:null;
+}
+function closeSheet(){$("scrim").hidden=true;$("sheet").hidden=true;}
+
+/* ---------- 닉네임 ---------- */
+function askNick(first){
+  openSheet(first?"닉네임을 정해 주세요":"닉네임 바꾸기",box=>{
+    box.appendChild(el("p",{class:"count",text:"모임 친구들에게 이 이름으로 보여요. 나중에 바꿀 수 있어요."}));
+    const inp=el("input",{id:"nick-in",maxlength:"16",autocomplete:"off",placeholder:"예: 다혜",value:nick});
+    box.appendChild(el("label",{class:"field",for:"nick-in"},["닉네임",inp]));
+    const go=el("button",{class:"btn",type:"button",text:"저장"});
+    const done=()=>{const v=inp.value.trim().replace(/\s+/g," ");if(!v){inp.focus();return;}
+      nick=v;putNick(v);$("my-nick").textContent=v;$("me").hidden=false;closeSheet();
+      if(!first)toast("앞으로 쓰는 글은 '"+v+"'(으)로 보여요.");};
+    go.onclick=done;inp.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();done();}};
+    box.appendChild(go);setTimeout(()=>inp.focus(),50);
+  },{closable:!first});
+}
+$("b-nick").onclick=()=>askNick(false);
+
+/* ---------- 책장 ---------- */
+function renderShelf(){
+  const s=$("shelf");s.textContent="";
+  $("count").textContent=books.length?"함께 읽은 책 "+books.length+"권":"";
+  books.forEach(b=>{
+    const btn=el("button",{class:"book",type:"button","aria-label":b.title+" 열기"},[
+      coverEl(b),
+      el("span",{class:"bt",text:b.title}),
+      el("span",{class:"bn",text:(b.noteCount?"글 "+b.noteCount+"개":"아직 글 없음")})
+    ]);
+    btn.onclick=()=>go(b.id);
+    s.appendChild(btn);
+  });
+  const add=el("button",{class:"addcard",type:"button"},[el("span",{text:"+"}),"책 추가"]);
+  add.onclick=openAddBook;
+  s.appendChild(add);
+}
+
+/* ---------- 책 추가 (Google 도서 검색) ---------- */
+function openAddBook(){
+  openSheet("책 추가",box=>{
+    const q=el("input",{id:"q",placeholder:"책 제목이나 저자",autocomplete:"off",enterkeyhint:"search"});
+    const sb=el("button",{class:"btn",type:"button",text:"검색"});
+    const res=el("div",{class:"results"});
+    const msg=el("p",{class:"count"});
+    box.append(el("div",{class:"searchrow"},[q,sb]),msg,res);
+    const run=async()=>{
+      const term=q.value.trim();if(!term)return;
+      msg.textContent="찾는 중…";res.textContent="";
+      try{
+        const r=await fetch("https://www.googleapis.com/books/v1/volumes?maxResults=12&printType=books&q="+encodeURIComponent(term));
+        if(!r.ok)throw new Error(r.status);
+        const j=await r.json();const items=j.items||[];
+        msg.textContent=items.length?"표지를 눌러서 책장에 올리세요.":"검색 결과가 없어요. 아래 '직접 입력'으로 추가해 주세요.";
+        items.forEach(it=>{
+          const v=it.volumeInfo||{};const img=v.imageLinks&&(v.imageLinks.thumbnail||v.imageLinks.smallThumbnail);
+          const cover=img?safeUrl(img).replace("&edge=curl",""):"";
+          const b=el("button",{class:"res",type:"button"},[
+            cover?el("img",{src:cover,alt:"",loading:"lazy",referrerpolicy:"no-referrer"}):el("div",{class:"noimg"}),
+            el("div",null,[el("b",{text:v.title+(v.subtitle?" : "+v.subtitle:"")}),el("small",{text:[(v.authors||[]).join(", "),v.publisher,(v.publishedDate||"").slice(0,4)].filter(Boolean).join(" · ")})])
+          ]);
+          b.onclick=()=>addBook({title:v.title||term,author:(v.authors||[]).join(", "),cover});
+          res.appendChild(b);
+        });
+      }catch(e){msg.textContent="지금은 검색이 안 돼요. 잠시 뒤 다시 하거나 '직접 입력'으로 추가해 주세요.";}
+    };
+    sb.onclick=run;q.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();run();}};
+    const manual=el("button",{class:"link",type:"button",text:"검색이 안 되면 직접 입력하기"});
+    manual.onclick=()=>openManual();
+    box.appendChild(manual);
+    setTimeout(()=>q.focus(),50);
+  });
+}
+function openManual(){
+  openSheet("직접 입력",box=>{
+    const t=el("input",{id:"m-t",autocomplete:"off"}),a=el("input",{id:"m-a",autocomplete:"off"}),c=el("input",{id:"m-c",autocomplete:"off",placeholder:"https://… (없으면 비워 두세요)"});
+    box.append(el("label",{class:"field",for:"m-t"},["책 제목",t]),el("label",{class:"field",for:"m-a"},["저자",a]),
+      el("label",{class:"field",for:"m-c"},["표지 이미지 주소",c]),
+      el("p",{class:"count",text:"표지 주소는 인터넷 서점에서 표지 사진을 길게 눌러 '이미지 주소 복사'로 가져올 수 있어요."}));
+    const go=el("button",{class:"btn",type:"button",text:"책장에 올리기"});
+    go.onclick=()=>{if(!t.value.trim()){t.focus();return;}addBook({title:t.value.trim(),author:a.value.trim(),cover:safeUrl(c.value)});};
+    box.appendChild(go);setTimeout(()=>t.focus(),50);
+  });
+}
+async function addBook(b){
+  if(!db){toast("아직 연결 중이에요. 잠시 뒤 다시 눌러 주세요.");return;}
+  if(books.some(x=>x.title===b.title&&(x.author||"")===(b.author||""))){toast("이미 책장에 있는 책이에요.");return;}
+  try{
+    await F.addDoc(F.collection(db,"books"),{title:String(b.title).slice(0,200),author:String(b.author||"").slice(0,200),cover:b.cover||"",
+      addedBy:nick,uid,createdAt:F.serverTimestamp(),noteCount:0});
+    closeSheet();toast("'"+b.title+"'을(를) 책장에 올렸어요.");
+  }catch(e){toast("올리지 못했어요. 잠시 뒤 다시 해 주세요.");}
+}
+
+/* ---------- 책 화면 ---------- */
+function go(id){location.hash=id?"b-"+id:"";}
+function route(){
+  const m=location.hash.match(/^#b-([A-Za-z0-9]+)$/);
+  if(m){showBook(m[1]);}else{showHome();}
+}
+window.addEventListener("hashchange",route);
+function showHome(){
+  current=null;if(unsubNotes){unsubNotes();unsubNotes=null;}
+  $("bookpage").hidden=true;$("home").hidden=false;renderShelf();
+}
+function showBook(id){
+  const b=books.find(x=>x.id===id);
+  if(!b){if(books.length)showHome();return;}
+  const changed=!current||current.id!==id;
+  current=b;$("home").hidden=true;$("bookpage").hidden=false;
+  if(changed){
+    noteFilter="전체";notes=[];
+    if(unsubNotes)unsubNotes();
+    unsubNotes=F.onSnapshot(F.query(F.collection(db,"books",id,"notes"),F.orderBy("createdAt","desc")),
+      snap=>{notes=snap.docs.map(d=>Object.assign({id:d.id},d.data()));renderNotes();},
+      ()=>setStatus("글을 불러오지 못했어요. 새로고침해 주세요.",true));
+    renderBookPage();window.scrollTo(0,0);
+  }else{renderBookHead();}
+}
+function renderBookHead(){
+  const h=$("bv-head");if(!h||!current)return;
+  h.textContent="";
+  h.append(el("h2",{text:current.title}),el("div",{class:"au",text:current.author||""}),
+    el("div",{class:"count",text:(current.addedBy?current.addedBy+" 님이 올림":"")}));
+}
+function renderBookPage(){
+  const p=$("bookpage");p.textContent="";
+  const back=el("button",{class:"ghost",type:"button",text:"← 책장으로"});back.onclick=()=>go("");
+  const left=el("div",{class:"left"},[coverEl(current),el("div",{class:"meta",id:"bv-head"})]);
+  // 글 쓰기
+  const types=el("div",{class:"types"});
+  TYPES.forEach(t=>{const b=el("button",{class:"type",type:"button","data-t":t,"aria-pressed":String(t===composeType),text:t});
+    b.onclick=()=>{composeType=t;types.querySelectorAll(".type").forEach(x=>x.setAttribute("aria-pressed",String(x.dataset.t===t)));ta.placeholder=PH[t];};types.appendChild(b);});
+  const PH={"메모":"마음에 남은 문장이나 장면을 적어 보세요.","의견":"이 책에 대한 생각, 모임에서 이야기하고 싶은 질문…","독후감":"다 읽고 난 뒤의 감상을 길게 남겨 보세요."};
+  const ta=el("textarea",{id:"c-text",placeholder:PH[composeType],"aria-label":"글 내용"});
+  const pg=el("input",{id:"c-page",inputmode:"numeric",placeholder:"쪽수 (선택)","aria-label":"쪽수"});
+  const send=el("button",{class:"btn",type:"button",text:"남기기"});
+  send.onclick=async()=>{
+    const text=ta.value.trim();if(!text){ta.focus();return;}
+    send.disabled=true;
+    try{
+      await F.addDoc(F.collection(db,"books",current.id,"notes"),{type:composeType,text:text.slice(0,15000),page:pg.value.replace(/[^0-9]/g,"").slice(0,5),nick,uid,createdAt:F.serverTimestamp()});
+      F.updateDoc(F.doc(db,"books",current.id),{noteCount:F.increment(1),lastNoteAt:F.serverTimestamp()}).catch(()=>{});
+      ta.value="";pg.value="";toast("남겼어요.");
+    }catch(e){toast("저장하지 못했어요. 다시 눌러 주세요.");}
+    send.disabled=false;
+  };
+  const compose=el("div",{class:"compose"},[types,ta,el("div",{class:"crow"},[pg,send])]);
+  const filters=el("div",{class:"types",id:"filters"});
+  const list=el("ul",{class:"notes",id:"notes"});
+  const right=el("div",{class:"right"},[compose,filters,list]);
+  p.append(el("div",{style:"margin-bottom:14px"},[back]),el("div",{class:"bookview"},[left,right]));
+  renderBookHead();renderNotes();
+}
+function renderNotes(){
+  const fl=$("filters"),ul=$("notes");if(!fl||!ul)return;
+  fl.textContent="";
+  ["전체"].concat(TYPES).forEach(t=>{const n=t==="전체"?notes.length:notes.filter(x=>x.type===t).length;
+    const b=el("button",{class:"type",type:"button","data-t":t,"aria-pressed":String(t===noteFilter),text:t+" "+n});
+    b.onclick=()=>{noteFilter=t;renderNotes();};fl.appendChild(b);});
+  ul.textContent="";
+  const vis=notes.filter(x=>noteFilter==="전체"||x.type===noteFilter);
+  if(!vis.length){ul.appendChild(el("li",{class:"empty",text:notes.length?"이 종류의 글은 아직 없어요.":"첫 글을 남겨 보세요."}));return;}
+  vis.forEach(n=>ul.appendChild(noteEl(n)));
+}
+function noteEl(n){
+  const li=el("li",{class:"note"+(n.type==="독후감"?" long":"")});
+  const head=el("div",{class:"nh"},[el("span",{class:"nick",text:n.nick||"이름 없음"}),el("span",{class:"chip "+(TYPES.includes(n.type)?n.type:"메모"),text:n.type||"메모"}),
+    n.page?el("span",{text:"p."+n.page}):null,el("span",{text:when(n.createdAt)+(n.editedAt?" · 고침":"")})]);
+  const tx=el("div",{class:"tx",text:n.text});
+  li.append(head,tx);
+  if(n.uid&&n.uid===uid){
+    const ed=el("button",{type:"button",text:"고치기"}),del=el("button",{type:"button",text:"지우기"});
+    ed.onclick=()=>{
+      const area=el("textarea",{"aria-label":"글 고치기"});area.value=n.text;
+      const ok=el("button",{class:"btn",type:"button",text:"저장"}),cancel=el("button",{class:"ghost",type:"button",text:"취소"});
+      const box=el("div",{class:"crow"},[cancel,ok]);
+      tx.replaceWith(area);acts.replaceWith(box);area.focus();
+      cancel.onclick=()=>renderNotes();
+      ok.onclick=async()=>{const v=area.value.trim();if(!v)return;
+        try{await F.updateDoc(F.doc(db,"books",current.id,"notes",n.id),{text:v.slice(0,15000),editedAt:F.serverTimestamp()});}
+        catch(e){toast("고치지 못했어요.");renderNotes();}};
+    };
+    del.onclick=async()=>{
+      if(!del.classList.contains("armed")){del.classList.add("armed");del.textContent="정말 지우기";setTimeout(()=>{del.classList.remove("armed");del.textContent="지우기";},2500);return;}
+      try{await F.deleteDoc(F.doc(db,"books",current.id,"notes",n.id));
+        F.updateDoc(F.doc(db,"books",current.id),{noteCount:F.increment(-1)}).catch(()=>{});}
+      catch(e){toast("지우지 못했어요.");}
+    };
+    const acts=el("div",{class:"acts"},[ed,del]);li.appendChild(acts);
+  }
+  return li;
+}
+
+/* ---------- 시작 ---------- */
+async function start(){
+  if(CFG.clubName){$("club").textContent=CFG.clubName;document.title=CFG.clubName;}
+  const fc=CFG.firebase||{};
+  if(!fc.apiKey||!fc.projectId||String(fc.apiKey).includes("여기에")){
+    $("home").textContent="";
+    $("home").appendChild(el("div",{class:"setup"},[el("b",{text:"아직 저장소가 연결되지 않았어요."}),el("br"),"config.js 파일에 Firebase 설정을 붙여넣은 뒤 다시 올려 주세요."]));
+    return;
+  }
+  nick=getNick();
+  if(nick){$("my-nick").textContent=nick;$("me").hidden=false;}
+  setStatus("책장을 불러오는 중…");
+  try{
+    const [app,auth,fs]=await Promise.all([
+      import(`https://www.gstatic.com/firebasejs/${V}/firebase-app.js`),
+      import(`https://www.gstatic.com/firebasejs/${V}/firebase-auth.js`),
+      import(`https://www.gstatic.com/firebasejs/${V}/firebase-firestore.js`)]);
+    F=fs;
+    const a=app.initializeApp(fc);
+    db=CFG.databaseId?fs.getFirestore(a,CFG.databaseId):fs.getFirestore(a);
+    const au=auth.getAuth(a);
+    await new Promise((res,rej)=>{
+      auth.onAuthStateChanged(au,u=>{if(u){uid=u.uid;res();}});
+      auth.signInAnonymously(au).catch(rej);
+    });
+    fs.onSnapshot(fs.query(fs.collection(db,"books"),fs.orderBy("createdAt","desc")),snap=>{
+      books=snap.docs.map(d=>Object.assign({id:d.id},d.data()));
+      setStatus("");
+      if(current){const nb=books.find(x=>x.id===current.id);if(nb){current=nb;renderBookHead();}else{go("");}}
+      if($("bookpage").hidden)renderShelf();
+      if(!current&&location.hash)route();
+    },()=>setStatus("책장을 불러오지 못했어요. 새로고침해 주세요.",true));
+    if(!nick)askNick(true);
+    route();
+  }catch(e){
+    setStatus("저장소에 연결하지 못했어요. 인터넷 연결과 Firebase 설정(익명 로그인 사용)을 확인해 주세요.",true);
+  }
+}
+renderShelf();
+start();
+if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(()=>{});
+</script>
+</body>
+</html>

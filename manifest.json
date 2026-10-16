@@ -1,0 +1,13 @@
+{
+  "name": "우리들의 책장",
+  "short_name": "책장",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#e9ede6",
+  "theme_color": "#1f5c73",
+  "icons": [
+    {"src": "icon-192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png"}
+  ]
+}
